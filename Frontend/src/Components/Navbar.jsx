@@ -1,28 +1,33 @@
 import React from "react";
-import { Link } from "react-router-dom";
-import { FaShoppingCart } from "react-icons/fa"; 
-import '../index.css';
+import { Link, useNavigate } from "react-router-dom";
+import { isAuthenticated, getUserFromToken } from "../utils/auth";
 
 const Navbar = () => {
-  
-  const cartItemCount = 2; // Example: Static count or dynamic from state
+  const navigate = useNavigate();
+  const user = getUserFromToken();
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/login");
+  };
 
   return (
-    <nav className="bg-white shadow py-4">
-      <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
-        <Link to="/" className="text-2xl font-bold text-blue-600">E-Shop</Link>
-        <div className="space-x-4">
-          <Link to="/" className="hover:text-blue-600">Home</Link>
-          <Link to="/product" className="hover:text-blue-600">Shop</Link>
-          <Link to="/about" className="hover:text-blue-600">About</Link>
-          <Link to="/contact" className="hover:text-blue-600">Contact</Link>
-
-          {/* Cart Link with Icon */}
-          <Link to="/cart" className="hover:text-blue-600 flex items-center space-x-2">
-            <FaShoppingCart />
-            <span className="font-semibold">{cartItemCount}</span> {/* Display cart count */}
-          </Link>
-        </div>
+    <nav className="bg-white shadow-md px-6 py-4 flex justify-between items-center">
+      <Link to="/" className="text-xl font-bold">E-Store</Link>
+      <div className="flex items-center space-x-6">
+        <Link to="/products">Shop</Link>
+        {user?.role === "admin" && <Link to="/dashboard">Dashboard</Link>}
+        {isAuthenticated() ? (
+          <>
+            <span>Hello, {user?.name}</span>
+            <button onClick={handleLogout} className="text-red-500">Logout</button>
+          </>
+        ) : (
+          <>
+            <Link to="/login">Login</Link>
+            <Link to="/signup">Signup</Link>
+          </>
+        )}
       </div>
     </nav>
   );
