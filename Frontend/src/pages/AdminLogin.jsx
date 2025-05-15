@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import Swal from "sweetalert2";
 import '../index.css';
 
-const LoginPage = () => {
+const AdminLoginPage = () => {
   const [credentials, setCredentials] = useState({
     email: "",
     password: "",
@@ -19,7 +19,6 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Basic validation (optional)
     if (!credentials.email || !credentials.password) {
       Swal.fire({
         icon: "error",
@@ -30,7 +29,7 @@ const LoginPage = () => {
     }
 
     try {
-      const response = await fetch("/api/auth/login", {
+      const response = await fetch("/api/auth/admin/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -44,46 +43,45 @@ const LoginPage = () => {
         Swal.fire({
           icon: "error",
           title: "Login Failed",
-          text: data.message || "Invalid credentials, try again",
+          text: data.message || "Invalid admin credentials",
         });
         return;
       }
 
-      // Success alert
       Swal.fire({
         icon: "success",
-        title: "Logged In",
-        text: "Welcome back!",
+        title: "Admin Logged In",
+        text: "Welcome back, Admin!",
         timer: 1500,
         showConfirmButton: false,
       });
 
-      console.log("User logged in:", data);
+      console.log("Admin logged in:", data);
       setCredentials({ email: "", password: "" });
 
-      // TODO: Store JWT or redirect as needed here
+      // TODO: Store admin token or redirect to admin dashboard
 
     } catch (error) {
       Swal.fire({
         icon: "error",
         title: "Oops!",
-        text: "Something went wrong. Please try again later.",
+        text: "Something went wrong. Try again later.",
       });
-      console.error("Login error:", error);
+      console.error("Admin login error:", error);
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-100 py-10">
       <div className="max-w-md mx-auto px-6">
-        <h2 className="text-3xl font-semibold mb-6 text-center">Login to Your Account</h2>
+        <h2 className="text-3xl font-semibold mb-6 text-center">Admin Login</h2>
         <form
           onSubmit={handleSubmit}
           className="bg-white p-6 rounded-lg shadow-lg space-y-5"
         >
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-              Email Address
+              Admin Email
             </label>
             <input
               type="email"
@@ -92,8 +90,8 @@ const LoginPage = () => {
               value={credentials.email}
               onChange={handleInputChange}
               required
-              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="your.email@example.com"
+              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-600"
+              placeholder="admin@example.com"
             />
           </div>
           <div>
@@ -107,15 +105,15 @@ const LoginPage = () => {
               value={credentials.password}
               onChange={handleInputChange}
               required
-              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-600"
               placeholder="Enter your password"
             />
           </div>
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700 transition duration-300"
+            className="w-full bg-red-600 text-white py-3 rounded-md hover:bg-red-700 transition duration-300"
           >
-            Log In
+            Admin Log In
           </button>
         </form>
       </div>
@@ -123,4 +121,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default AdminLoginPage;

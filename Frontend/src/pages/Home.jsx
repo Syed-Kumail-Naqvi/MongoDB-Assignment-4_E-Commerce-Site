@@ -3,18 +3,66 @@ import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
 import '../index.css'
 
+const staticProducts = [
+  {
+    id: 1,
+    name: "Wireless Headphones",
+    category: "Electronics",
+    price: 129.99,
+    image:
+      "https://images.unsplash.com/photo-1511367461989-f85a21fda167?auto=format&fit=crop&w=600&q=80",
+  },
+  {
+    id: 2,
+    name: "Classic Sneakers",
+    category: "Fashion",
+    price: 79.99,
+    image:
+      "https://images.unsplash.com/photo-1528701800489-802460c06e72?auto=format&fit=crop&w=600&q=80",
+  },
+  {
+    id: 3,
+    name: "Smart Watch",
+    category: "Electronics",
+    price: 199.99,
+    image:
+      "https://images.unsplash.com/photo-1519741494425-1d8d7c68f8f3?auto=format&fit=crop&w=600&q=80",
+  },
+  {
+    id: 4,
+    name: "Coffee Maker",
+    category: "Home & Kitchen",
+    price: 49.99,
+    image:
+      "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=600&q=80",
+  },
+  {
+    id: 5,
+    name: "Denim Jacket",
+    category: "Fashion",
+    price: 59.99,
+    image:
+      "https://images.unsplash.com/photo-1521334884684-d80222895322?auto=format&fit=crop&w=600&q=80",
+  },
+  {
+    id: 6,
+    name: "Bluetooth Speaker",
+    category: "Electronics",
+    price: 89.99,
+    image:
+      "https://images.unsplash.com/photo-1508898578281-774ac4893a54?auto=format&fit=crop&w=600&q=80",
+  },
+];
+
 const HomePage = () => {
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Navbar */}
       <Navbar />
 
       {/* Hero Section */}
       <section className="bg-white py-20">
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <h2 className="text-4xl font-bold mb-4">
-            Discover the Latest Trends
-          </h2>
+          <h2 className="text-4xl font-bold mb-4">Discover the Latest Trends</h2>
           <p className="text-gray-600 mb-6">
             Shop the newest collections in fashion, electronics, and more.
           </p>
@@ -27,64 +75,33 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Shop Section */}
+      {/* Static Product Showcase */}
       <section className="py-16">
-        <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Filters Sidebar */}
-          <aside className="hidden lg:block bg-white p-4 rounded shadow">
-            <h4 className="text-lg font-semibold mb-4">Categories</h4>
-            <ul className="space-y-2 text-gray-600">
-              <li>
-                <Link to="/shop" className="hover:text-blue-600">
-                  All Products
-                </Link>
-              </li>
-              <li>
-                <Link to="/shop/fashion" className="hover:text-blue-600">
-                  Fashion
-                </Link>
-              </li>
-              <li>
-                <Link to="/shop/electronics" className="hover:text-blue-600">
-                  Electronics
-                </Link>
-              </li>
-              <li>
-                <Link to="/shop/home-kitchen" className="hover:text-blue-600">
-                  Home & Kitchen
-                </Link>
-              </li>
-            </ul>
-            <h4 className="text-lg font-semibold mt-6 mb-2">Price Range</h4>
-            <input type="range" className="w-full" min="0" max="500" />
-          </aside>
-
-          {/* Product Listing */}
-          <div className="lg:col-span-3">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-semibold">Shop All</h3>
-              <select className="border border-gray-300 rounded px-3 py-1">
-                <option>Sort by</option>
-                <option>Price: Low to High</option>
-                <option>Price: High to Low</option>
-                <option>Newest</option>
-              </select>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-              {[1, 2, 3, 4, 5, 6].map((item) => (
-                <div key={item} className="bg-white shadow rounded p-4">
-                  <div className="h-48 bg-gray-200 rounded mb-4"></div>
-                  <h4 className="text-lg font-medium">Product Name</h4>
-                  <p className="text-sm text-gray-500 mb-2">Category</p>
-                  <span className="text-blue-600 font-semibold">$99.99</span>
+        <div className="max-w-7xl mx-auto px-4">
+          <h3 className="text-3xl font-semibold mb-8 text-center">Featured Products</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+            {staticProducts.map(({ id, name, category, price, image }) => (
+              <div
+                key={id}
+                className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-default"
+                title="Static product — not orderable"
+              >
+                <img
+                  src={image}
+                  alt={name}
+                  className="h-48 w-full object-cover"
+                />
+                <div className="p-4">
+                  <h4 className="text-lg font-medium mb-1">{name}</h4>
+                  <p className="text-sm text-gray-500 mb-2">{category}</p>
+                  <span className="text-blue-600 font-semibold">${price.toFixed(2)}</span>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Footer */}
       <Footer />
     </div>
   );

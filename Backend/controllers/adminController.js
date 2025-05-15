@@ -16,7 +16,7 @@ const getAllUsersWithOrders = async (req, res) => {
 
     res.status(200).json(usersWithOrders);
   } catch (err) {
-    res.status(500).json({ message: 'Failed to fetch users', error: err });
+    res.status(500).json({ message: 'Failed to Fetch Users', error: err });
   }
 };
 

@@ -8,7 +8,7 @@ const createOrder = async (req, res) => {
         const { products, shippingAddress, paymentMethod, totalAmount } = req.body;
 
         if (!products || products.length === 0) {
-            return res.status(400).json({ message: "No products in order" });
+            return res.status(400).json({ message: "No Products In Order!" });
         }
 
         const order = new Order({
@@ -23,8 +23,8 @@ const createOrder = async (req, res) => {
         const savedOrder = await order.save();
         res.status(201).json(savedOrder);
     } catch (error) {
-        console.error("Order creation error:", error);
-        res.status(500).json({ message: "Server error" });
+        console.error("Order Creation Error:", error);
+        res.status(500).json({ Message: "Server Error" });
     }
 };
 

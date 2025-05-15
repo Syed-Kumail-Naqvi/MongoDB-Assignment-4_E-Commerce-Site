@@ -46,7 +46,7 @@ const getAllProducts = async (req, res) => {
 const getSingleProduct = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
-    if (!product) return res.status(404).json({ message: "Product not found" });
+    if (!product) return res.status(404).json({ Message: "Product Not Found!" });
 
     res.status(200).json({ success: true, product });
   } catch (error) {
@@ -60,7 +60,7 @@ const updateProduct = async (req, res) => {
     const { name, price, description } = req.body;
     const product = await Product.findById(req.params.id);
 
-    if (!product) return res.status(404).json({ message: "Product not found" });
+    if (!product) return res.status(404).json({ Message: "Product Not Found!" });
 
     // If new image uploaded, delete old one and upload new
     if (req.file) {
@@ -91,14 +91,14 @@ const updateProduct = async (req, res) => {
 const deleteProduct = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
-    if (!product) return res.status(404).json({ message: "Product not found" });
+    if (!product) return res.status(404).json({ Message: "Product Not Found!" });
 
     await cloudinary.uploader.destroy(product.cloudinary_id);
     await product.remove();
 
-    res.status(200).json({ success: true, message: "Product deleted" });
+    res.status(200).json({ success: true, Message: "Product Deleted" });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, Message: error.message });
   }
 };
 

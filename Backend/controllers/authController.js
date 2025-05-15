@@ -15,7 +15,7 @@ exports.registerUser = async (req, res) => {
   try {
     const userExists = await User.findOne({ email });
     if (userExists)
-      return res.status(400).json({ message: 'User already exists' });
+      return res.status(400).json({ message: 'User Already Exists!' });
 
     const user = await User.create({ name, email, password });
     res.status(201).json({
@@ -25,8 +25,10 @@ exports.registerUser = async (req, res) => {
       role: user.role,
       token: generateToken(user._id),
     });
+    console.log("User Created Sucessfully!");
+    
   } catch (error) {
-    res.status(500).json({ message: 'Server Error', error });
+    res.status(500).json({ Message: 'Server Error', error });
   }
 };
 
@@ -45,9 +47,9 @@ exports.loginUser = async (req, res) => {
         token: generateToken(user._id),
       });
     } else {
-      res.status(401).json({ message: 'Invalid credentials' });
+      res.status(401).json({ Message: 'Invalid Credentials' });
     }
   } catch (error) {
-    res.status(500).json({ message: 'Server Error', error });
+    res.status(500).json({ Message: 'Server Error', error });
   }
 };
