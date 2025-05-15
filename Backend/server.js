@@ -19,7 +19,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(fileUpload({ useTempFiles: true }));
 
 // Routes
-app.use(route);
+app.use("/api", route);
 
 // Error handler
 app.use(errorHandler);

@@ -21,20 +21,20 @@ const { protect, protectAdmin } = require("../middleware/middleware");
 const upload = require("../middleware/multer");
 
 // ---------------- AUTH ROUTES -------------------
-router.post("/api/auth/register", registerUser);
-router.post("/api/auth/login", loginUser);
+router.post("/auth/register", registerUser);
+router.post("/auth/login", loginUser);
 
 // ---------------- PRODUCT ROUTES ----------------
-router.post("/api/products", upload.single("image"), protectAdmin, createProduct);
-router.get("/api/products", getAllProducts);
-router.get("/api/products/:id", getSingleProduct);
-router.put("/api/products/:id", upload.single("image"), protectAdmin, updateProduct);
-router.delete("/api/products/:id", protectAdmin, deleteProduct);
+router.post("/products", upload.single("image"), protectAdmin, createProduct);
+router.get("/products", getAllProducts);
+router.get("/products/:id", getSingleProduct);
+router.put("/products/:id", upload.single("image"), protectAdmin, updateProduct);
+router.delete("/products/:id", protectAdmin, deleteProduct);
 
 // ---------------- ORDER ROUTES ----------------
-router.post("/api/orders", protect, createOrder); // Only logged-in users should place orders
+router.post("/orders", protect, createOrder); // Only logged-in users should place orders
 
 // ---------------- ADMIN ROUTES ----------------
-router.get("/api/admin/users", protectAdmin, getAllUsersWithOrders);
+router.get("/admin/users", protectAdmin, getAllUsersWithOrders);
 
 module.exports = router;

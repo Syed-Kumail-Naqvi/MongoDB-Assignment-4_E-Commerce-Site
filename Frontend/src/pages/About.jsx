@@ -1,4 +1,3 @@
-import React from "react";
 import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
 
@@ -11,7 +10,7 @@ const AboutPage = () => {
         <h1 className="text-4xl font-bold mb-6 text-center">About Us</h1>
         <p className="text-lg leading-relaxed text-center max-w-3xl mx-auto">
           Welcome to our E-Commerce platform! We are passionate about bringing you the best quality products with a seamless online shopping experience.
-          Our mission is to provide a wide range of fashion-forward, reliable, and affordable items to customers all around the world. 
+          Our mission is to provide a wide range of fashion-forward, reliable, and affordable items to customers all around the world.
         </p>
 
         <div className="grid md:grid-cols-2 gap-10 mt-16">

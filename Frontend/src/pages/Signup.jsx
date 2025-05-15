@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import Swal from "sweetalert2";
-import '../index.css';
+import "../index.css";
+import { useNavigate } from "react-router-dom";
 
 const SignupPage = () => {
+  const navigate = useNavigate();
   const [user, setUser] = useState({
     username: "",
     email: "",
@@ -31,13 +33,13 @@ const SignupPage = () => {
     }
 
     try {
-      const response = await fetch("/api/auth/register", {
+      const response = await fetch("http://localhost:5000/api/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          username: user.username,
+          name: user.username,
           email: user.email,
           password: user.password,
         }),
@@ -65,8 +67,10 @@ const SignupPage = () => {
       console.log("User registered:", data);
       setUser({ username: "", email: "", password: "", confirmPassword: "" });
 
-      // TODO: Redirect to login page if needed
-
+      setTimeout(() => {
+        navigate("/login");
+      }, 1800);
+      
     } catch (error) {
       Swal.fire({
         icon: "error",
@@ -80,13 +84,18 @@ const SignupPage = () => {
   return (
     <div className="min-h-screen bg-gray-100 py-10">
       <div className="max-w-md mx-auto px-6">
-        <h2 className="text-3xl font-semibold mb-6 text-center">Create an Account</h2>
+        <h2 className="text-3xl font-semibold mb-6 text-center">
+          Create an Account
+        </h2>
         <form
           onSubmit={handleSubmit}
           className="bg-white p-6 rounded-lg shadow-lg space-y-5"
         >
           <div>
-            <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="username"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Username
             </label>
             <input
@@ -101,7 +110,10 @@ const SignupPage = () => {
             />
           </div>
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Email Address
             </label>
             <input
@@ -116,7 +128,10 @@ const SignupPage = () => {
             />
           </div>
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Password
             </label>
             <input
@@ -131,7 +146,10 @@ const SignupPage = () => {
             />
           </div>
           <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="confirmPassword"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Confirm Password
             </label>
             <input

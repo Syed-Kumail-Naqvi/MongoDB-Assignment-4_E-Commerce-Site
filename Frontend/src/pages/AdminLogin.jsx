@@ -1,8 +1,11 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import '../index.css';
 
 const AdminLoginPage = () => {
+  const navigate = useNavigate();
+
   const [credentials, setCredentials] = useState({
     email: "",
     password: "",
@@ -29,7 +32,7 @@ const AdminLoginPage = () => {
     }
 
     try {
-      const response = await fetch("/api/auth/admin/login", {
+      const response = await fetch("http://localhost:5000/api/auth/admin/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -48,6 +51,9 @@ const AdminLoginPage = () => {
         return;
       }
 
+      // ✅ Store admin token
+      localStorage.setItem("adminToken", data.token);
+
       Swal.fire({
         icon: "success",
         title: "Admin Logged In",
@@ -56,10 +62,12 @@ const AdminLoginPage = () => {
         showConfirmButton: false,
       });
 
-      console.log("Admin logged in:", data);
-      setCredentials({ email: "", password: "" });
+      // ✅ Redirect to admin dashboard
+      setTimeout(() => {
+        navigate("/admin/dashboard");
+      }, 1500);
 
-      // TODO: Store admin token or redirect to admin dashboard
+      setCredentials({ email: "", password: "" });
 
     } catch (error) {
       Swal.fire({
@@ -113,7 +121,7 @@ const AdminLoginPage = () => {
             type="submit"
             className="w-full bg-red-600 text-white py-3 rounded-md hover:bg-red-700 transition duration-300"
           >
-            Admin Log In
+            Log In
           </button>
         </form>
       </div>

@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 import Swal from "sweetalert2";
 import '../index.css';
+import { useNavigate } from "react-router-dom"; // ✅ Import useNavigate
 
 const LoginPage = () => {
+  const navigate = useNavigate(); // ✅ Setup navigation hook
+
   const [credentials, setCredentials] = useState({
     email: "",
     password: "",
@@ -19,7 +22,6 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Basic validation (optional)
     if (!credentials.email || !credentials.password) {
       Swal.fire({
         icon: "error",
@@ -30,7 +32,7 @@ const LoginPage = () => {
     }
 
     try {
-      const response = await fetch("/api/auth/login", {
+      const response = await fetch("http://localhost:5000/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -49,7 +51,10 @@ const LoginPage = () => {
         return;
       }
 
-      // Success alert
+      // ✅ Save token in localStorage
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user)); // if you're returning user info
+
       Swal.fire({
         icon: "success",
         title: "Logged In",
@@ -61,7 +66,8 @@ const LoginPage = () => {
       console.log("User logged in:", data);
       setCredentials({ email: "", password: "" });
 
-      // TODO: Store JWT or redirect as needed here
+      // ✅ Navigate to homepage/dashboard
+      navigate("/"); // or navigate("/dashboard") if that's your route
 
     } catch (error) {
       Swal.fire({
@@ -77,10 +83,7 @@ const LoginPage = () => {
     <div className="min-h-screen bg-gray-100 py-10">
       <div className="max-w-md mx-auto px-6">
         <h2 className="text-3xl font-semibold mb-6 text-center">Login to Your Account</h2>
-        <form
-          onSubmit={handleSubmit}
-          className="bg-white p-6 rounded-lg shadow-lg space-y-5"
-        >
+        <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-lg space-y-5">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
               Email Address

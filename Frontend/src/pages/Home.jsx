@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
-import '../index.css'
+import "../index.css";
 
 const staticProducts = [
   {
@@ -62,23 +62,26 @@ const HomePage = () => {
       {/* Hero Section */}
       <section className="bg-white py-20">
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <h2 className="text-4xl font-bold mb-4">Discover the Latest Trends</h2>
-          <p className="text-gray-600 mb-6">
+          <h2 className="text-4xl font-bold mb-4 text-gray-900">
+            Discover the Latest Trends
+          </h2>
+          <p className="text-gray-700 mb-6">
             Shop the newest collections in fashion, electronics, and more.
           </p>
           <Link
             to="/product"
-            className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition"
+            className="inline-block bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
           >
             Shop Now
           </Link>
         </div>
       </section>
 
-      {/* Static Product Showcase */}
-      <section className="py-16">
+      <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4">
-          <h3 className="text-3xl font-semibold mb-8 text-center">Featured Products</h3>
+          <h3 className="text-3xl font-semibold mb-8 text-center text-gray-900">
+            Featured Products
+          </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
             {staticProducts.map(({ id, name, category, price, image }) => (
               <div
@@ -92,9 +95,13 @@ const HomePage = () => {
                   className="h-48 w-full object-cover"
                 />
                 <div className="p-4">
-                  <h4 className="text-lg font-medium mb-1">{name}</h4>
-                  <p className="text-sm text-gray-500 mb-2">{category}</p>
-                  <span className="text-blue-600 font-semibold">${price.toFixed(2)}</span>
+                  <h4 className="text-lg font-medium mb-1 text-gray-900">
+                    {name}
+                  </h4>
+                  <p className="text-sm text-gray-600 mb-2">{category}</p>
+                  <span className="text-blue-600 font-semibold">
+                    ${price.toFixed(2)}
+                  </span>
                 </div>
               </div>
             ))}

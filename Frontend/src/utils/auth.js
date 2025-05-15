@@ -1,28 +1,26 @@
 export const getUserFromToken = () => {
   const token = localStorage.getItem("token");
-  if (!token) throw new Error("No token found");
+  if (!token) return null;  // No token? Just return null, no error.
 
   try {
-    // Decode the token payload without a library (simple base64 decode)
+    // Decode JWT payload (base64 decode)
     const payload = JSON.parse(atob(token.split('.')[1]));
-    
-    // Check expiration
+
+    // Check if token expired
     if (payload.exp * 1000 < Date.now()) {
       localStorage.removeItem("token");
-      throw new Error("Token expired");
+      return null; // Token expired? Remove and return null.
     }
-    return payload.user; // assuming payload contains user info under 'user'
+
+    // Return user info inside token payload
+    return payload.user || null; 
   } catch (error) {
+    // Token malformed or decode error
     localStorage.removeItem("token");
-    throw new Error("Invalid token");
+    return null;  // Return null instead of throwing
   }
 };
 
 export const isAuthenticated = () => {
-  try {
-    const user = getUserFromToken();
-    return !!user;
-  } catch {
-    return false;
-  }
+  return !!getUserFromToken();
 };
