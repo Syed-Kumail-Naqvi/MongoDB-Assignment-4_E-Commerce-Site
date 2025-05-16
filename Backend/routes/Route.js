@@ -15,6 +15,7 @@ const {
 } = require("../controllers/productController");
 const { createOrder } = require("../controllers/orderController");
 const { getAllUsersWithOrders } = require("../controllers/adminController");
+const { adminLoginUser } = require("../controllers/authController");
 
 // ---------------- MIDDLEWARE -------------------
 const { protect, protectAdmin } = require("../middleware/middleware");
@@ -23,6 +24,7 @@ const upload = require("../middleware/multer");
 // ---------------- AUTH ROUTES -------------------
 router.post("/auth/register", registerUser);
 router.post("/auth/login", loginUser);
+router.post('/auth/admin/login', adminLoginUser);
 
 // ---------------- PRODUCT ROUTES ----------------
 router.post("/products", upload.single("image"), protectAdmin, createProduct);

@@ -1,26 +1,43 @@
 export const getUserFromToken = () => {
-  const token = localStorage.getItem("token");
-  if (!token) return null;  // No token? Just return null, no error.
+  // 1. Try to get user object from localStorage (already parsed)
+  const userStr = localStorage.getItem("user");
+  if (userStr) {
+    try {
+      return JSON.parse(userStr); // 👈 Already authenticated
+    } catch {
+      localStorage.removeItem("user");
+    }
+  }
+
+  // 2. Decode token manually
+  const token = localStorage.getItem("token") || localStorage.getItem("adminToken");
+  if (!token) return null;
 
   try {
-    // Decode JWT payload (base64 decode)
-    const payload = JSON.parse(atob(token.split('.')[1]));
+    const payload = JSON.parse(atob(token.split(".")[1])); // Decode payload
 
-    // Check if token expired
     if (payload.exp * 1000 < Date.now()) {
+      // Token expired
       localStorage.removeItem("token");
-      return null; // Token expired? Remove and return null.
+      localStorage.removeItem("adminToken");
+      return null;
     }
 
-    // Return user info inside token payload
-    return payload.user || null; 
+    return payload; // Contains id, role, email, etc.
   } catch (error) {
-    // Token malformed or decode error
     localStorage.removeItem("token");
-    return null;  // Return null instead of throwing
+    localStorage.removeItem("adminToken");
+    return null;
   }
 };
 
+// ✅ User is logged in
 export const isAuthenticated = () => {
   return !!getUserFromToken();
+};
+
+// ✅ Admin check
+export const isAdminAuthenticated = () => {
+  const user = getUserFromToken();
+  return user?.role === "admin";
 };

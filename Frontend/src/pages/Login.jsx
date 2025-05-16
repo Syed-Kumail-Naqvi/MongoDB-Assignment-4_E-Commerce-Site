@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import Swal from "sweetalert2";
-import '../index.css';
-import { useNavigate } from "react-router-dom"; // ✅ Import useNavigate
+import "../index.css";
+import { useNavigate } from "react-router-dom"; 
 
 const LoginPage = () => {
-  const navigate = useNavigate(); // ✅ Setup navigation hook
+  const navigate = useNavigate();
 
   const [credentials, setCredentials] = useState({
     email: "",
@@ -34,9 +34,7 @@ const LoginPage = () => {
     try {
       const response = await fetch("http://localhost:5000/api/auth/login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(credentials),
       });
 
@@ -51,9 +49,9 @@ const LoginPage = () => {
         return;
       }
 
-      // ✅ Save token in localStorage
+      // Store token and user info separately
       localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user)); // if you're returning user info
+      localStorage.setItem("user", JSON.stringify(data.user));
 
       Swal.fire({
         icon: "success",
@@ -63,12 +61,8 @@ const LoginPage = () => {
         showConfirmButton: false,
       });
 
-      console.log("User logged in:", data);
       setCredentials({ email: "", password: "" });
-
-      // ✅ Navigate to homepage/dashboard
-      navigate("/"); // or navigate("/dashboard") if that's your route
-
+      navigate("/"); // redirect after login
     } catch (error) {
       Swal.fire({
         icon: "error",
@@ -82,10 +76,18 @@ const LoginPage = () => {
   return (
     <div className="min-h-screen bg-gray-100 py-10">
       <div className="max-w-md mx-auto px-6">
-        <h2 className="text-3xl font-semibold mb-6 text-center">Login to Your Account</h2>
-        <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-lg space-y-5">
+        <h2 className="text-3xl font-semibold mb-6 text-center">
+          Login to Your Account
+        </h2>
+        <form
+          onSubmit={handleSubmit}
+          className="bg-white p-6 rounded-lg shadow-lg space-y-5"
+        >
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Email Address
             </label>
             <input
@@ -100,7 +102,10 @@ const LoginPage = () => {
             />
           </div>
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Password
             </label>
             <input

@@ -4,6 +4,8 @@ import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
 
 const Dashboard = () => {
+  const [usersWithOrders, setUsersWithOrders] = useState([]);
+  const [userLoading, setUserLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [newProduct, setNewProduct] = useState({
     name: "",
@@ -15,47 +17,67 @@ const Dashboard = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Fetch all products on mount or after updates
   const fetchProducts = async () => {
-    setLoading(true);
     try {
+      setLoading(true);
       const res = await fetch("http://localhost:5000/api/products");
       const data = await res.json();
-      if (res.ok) {
+      if (res.ok && Array.isArray(data)) {
         setProducts(data);
       } else {
-        Swal.fire("Error", data.message || "Failed to fetch products", "error");
+        setProducts([]);
+        Swal.fire("Error", data.message || "Invalid product data", "error");
       }
     } catch (err) {
-      Swal.fire("Error", "Server error fetching products", "error");
+      console.error("Fetch Error:", err);
+      Swal.fire("Error", "Server error while fetching products", "error");
     } finally {
       setLoading(false);
     }
   };
 
+  const fetchUsersWithOrders = async () => {
+    try {
+      setUserLoading(true);
+      const res = await fetch("http://localhost:5000/api/admin/users", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+        },
+      });
+      const data = await res.json();
+      if (res.ok && Array.isArray(data)) {
+        setUsersWithOrders(data);
+      } else {
+        setUsersWithOrders([]);
+        Swal.fire("Error", data.message || "Invalid user data", "error");
+      }
+    } catch (err) {
+      console.error("User Fetch Error:", err);
+      Swal.fire("Error", "Server error while fetching users", "error");
+    } finally {
+      setUserLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchProducts();
+    fetchUsersWithOrders();
   }, []);
 
   const handleAddProduct = async (e) => {
     e.preventDefault();
 
-    if (
-      !newProduct.name ||
-      !newProduct.price ||
-      !newProduct.category ||
-      !newProduct.image
-    ) {
+    const { name, price, category, image } = newProduct;
+
+    if (!name || !price || !category || !image) {
       Swal.fire("Warning", "Please fill all required fields", "warning");
       return;
     }
 
     const formData = new FormData();
-    formData.append("name", newProduct.name);
-    formData.append("description", newProduct.description);
-    formData.append("price", newProduct.price);
-    formData.append("category", newProduct.category);
-    formData.append("image", newProduct.image);
+    Object.entries(newProduct).forEach(([key, val]) => {
+      formData.append(key, val);
+    });
 
     try {
       setLoading(true);
@@ -79,19 +101,18 @@ const Dashboard = () => {
           category: "",
           image: null,
         });
-        fetchProducts(); // refresh list
+        setProducts([data, ...products]);
       } else {
         Swal.fire("Error", data.message || "Failed to add product", "error");
       }
     } catch (error) {
-      Swal.fire("Error", "Something went wrong while adding product", "error");
-      console.error(error);
+      console.error("Add Product Error:", error);
+      Swal.fire("Error", "Something went wrong", "error");
     } finally {
       setLoading(false);
     }
   };
 
-  // Simple delete function placeholder
   const handleDelete = async (productId) => {
     const confirmed = await Swal.fire({
       title: "Are you sure?",
@@ -118,7 +139,7 @@ const Dashboard = () => {
           Swal.fire("Deleted!", "Product has been deleted.", "success");
           fetchProducts();
         } else {
-          Swal.fire("Error", data.message || "Failed to delete product", "error");
+          Swal.fire("Error", data.message || "Failed to delete", "error");
         }
       } catch (error) {
         Swal.fire("Error", "Server error deleting product", "error");
@@ -137,25 +158,52 @@ const Dashboard = () => {
 
         {/* User Dashboard */}
         <section className="mb-10">
-          <h2 className="text-2xl font-semibold mb-4">User Dashboard</h2>
-          <div className="bg-white shadow rounded-xl p-4">
-            {/* TODO: Fetch and display user data */}
-            <p>No users found.</p>
+          <h2 className="text-2xl font-bold mb-4">User Dashboard</h2>
+          <div className="overflow-x-auto bg-white rounded-xl shadow">
+            {userLoading ? (
+              <p className="p-4 text-gray-500">Loading users...</p>
+            ) : usersWithOrders.length === 0 ? (
+              <p className="p-4 text-gray-500">No users found.</p>
+            ) : (
+              <table className="min-w-full divide-y divide-gray-200 text-sm">
+                <thead className="bg-gray-100 text-left">
+                  <tr>
+                    <th className="px-6 py-3 font-semibold text-gray-700">#</th>
+                    <th className="px-6 py-3 font-semibold text-gray-700">Name</th>
+                    <th className="px-6 py-3 font-semibold text-gray-700">Email</th>
+                    <th className="px-6 py-3 font-semibold text-gray-700">Role</th>
+                    <th className="px-6 py-3 font-semibold text-gray-700">Orders</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {usersWithOrders.map((user, index) => (
+                    <tr key={user._id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4">{index + 1}</td>
+                      <td className="px-6 py-4 font-medium">{user.name}</td>
+                      <td className="px-6 py-4 text-blue-600">{user.email}</td>
+                      <td className="px-6 py-4 capitalize">{user.role || "user"}</td>
+                      <td className="px-6 py-4">{user.orders?.length || 0}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </section>
 
         {/* Product Dashboard */}
         <section>
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-semibold">Product Dashboard</h2>
+            <h2 className="text-2xl font-bold">Product Dashboard</h2>
             <button
-              className="bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700"
+              className="bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 disabled:opacity-50"
               onClick={() => setShowModal(true)}
               disabled={loading}
             >
               Add Product
             </button>
           </div>
+
           <div className="bg-white shadow rounded-xl p-4">
             {loading ? (
               <p>Loading products...</p>
@@ -180,22 +228,15 @@ const Dashboard = () => {
                       <td className="border px-4 py-2 space-x-2">
                         <button
                           className="bg-yellow-400 text-white px-3 py-1 rounded hover:bg-yellow-500"
-                          // TODO: Implement edit modal & logic
                           onClick={() =>
-                            Swal.fire(
-                              "Info",
-                              "Edit feature coming soon!",
-                              "info"
-                            )
+                            Swal.fire("Info", "Edit functionality coming soon!", "info")
                           }
-                          disabled={loading}
                         >
                           Edit
                         </button>
                         <button
                           className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
                           onClick={() => handleDelete(product._id)}
-                          disabled={loading}
                         >
                           Delete
                         </button>
@@ -212,90 +253,63 @@ const Dashboard = () => {
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-md">
-            <h3 className="text-xl font-semibold mb-4">Add New Product</h3>
-            <form onSubmit={handleAddProduct} encType="multipart/form-data">
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-1">
-                  Product Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  className="w-full border px-3 py-2 rounded"
-                  value={newProduct.name}
-                  onChange={(e) =>
-                    setNewProduct({ ...newProduct, name: e.target.value })
-                  }
-                  required
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-1">
-                  Description
-                </label>
-                <textarea
-                  className="w-full border px-3 py-2 rounded"
-                  value={newProduct.description}
-                  onChange={(e) =>
-                    setNewProduct({ ...newProduct, description: e.target.value })
-                  }
-                  rows={3}
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-1">
-                  Price <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="number"
-                  className="w-full border px-3 py-2 rounded"
-                  value={newProduct.price}
-                  onChange={(e) =>
-                    setNewProduct({ ...newProduct, price: e.target.value })
-                  }
-                  required
-                  min="0"
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-1">
-                  Category <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  className="w-full border px-3 py-2 rounded"
-                  value={newProduct.category}
-                  onChange={(e) =>
-                    setNewProduct({ ...newProduct, category: e.target.value })
-                  }
-                  required
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-1">
-                  Image <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) =>
-                    setNewProduct({ ...newProduct, image: e.target.files[0] })
-                  }
-                  required
-                />
-              </div>
-              <div className="flex justify-end space-x-3">
+          <div className="bg-white p-6 rounded-xl w-[90%] max-w-md shadow-lg">
+            <h2 className="text-xl font-semibold mb-4">Add Product</h2>
+            <form onSubmit={(e) => handleAddProduct(e)}>
+              <input
+                type="text"
+                placeholder="Name"
+                className="w-full mb-2 p-2 border rounded"
+                value={newProduct.name}
+                onChange={(e) =>
+                  setNewProduct({ ...newProduct, name: e.target.value })
+                }
+              />
+              <textarea
+                placeholder="Description"
+                className="w-full mb-2 p-2 border rounded"
+                value={newProduct.description}
+                onChange={(e) =>
+                  setNewProduct({ ...newProduct, description: e.target.value })
+                }
+              ></textarea>
+              <input
+                type="number"
+                placeholder="Price"
+                className="w-full mb-2 p-2 border rounded"
+                value={newProduct.price}
+                onChange={(e) =>
+                  setNewProduct({ ...newProduct, price: e.target.value })
+                }
+              />
+              <input
+                type="text"
+                placeholder="Category"
+                className="w-full mb-2 p-2 border rounded"
+                value={newProduct.category}
+                onChange={(e) =>
+                  setNewProduct({ ...newProduct, category: e.target.value })
+                }
+              />
+              <input
+                type="file"
+                accept="image/*"
+                className="w-full mb-4"
+                onChange={(e) =>
+                  setNewProduct({ ...newProduct, image: e.target.files[0] })
+                }
+              />
+              <div className="flex justify-end gap-2">
                 <button
                   type="button"
-                  className="px-4 py-2 rounded bg-gray-400 hover:bg-gray-500 text-white"
                   onClick={() => setShowModal(false)}
-                  disabled={loading}
+                  className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white"
+                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
                   disabled={loading}
                 >
                   {loading ? "Adding..." : "Add Product"}

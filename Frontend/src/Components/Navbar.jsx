@@ -1,35 +1,43 @@
 import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { isAuthenticated, getUserFromToken } from "../utils/auth";
 import { FaShoppingCart } from "react-icons/fa";
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const user = getUserFromToken();
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const currentUser = getUserFromToken();
+    setUser(currentUser);
+  }, []);
 
   const handleLogout = () => {
-    // Remove the right token depending on user role
-    if (user?.role === "admin") {
-      localStorage.removeItem("adminToken");
-    } else {
-      localStorage.removeItem("token");
-    }
+    // Clear both tokens just to be safe
+    localStorage.removeItem("token");
+    localStorage.removeItem("adminToken");
+    localStorage.removeItem("user");
+    setUser(null);
     navigate("/login");
   };
 
   return (
     <nav className="bg-gray-900 shadow-md px-6 py-4 flex justify-between items-center sticky top-0 z-50">
-      <Link to="/" className="text-2xl font-extrabold text-blue-400 hover:text-blue-500 transition">
+      <Link
+        to="/"
+        className="text-2xl font-extrabold text-blue-400 hover:text-blue-500 transition"
+      >
         E-Store
       </Link>
 
       <div className="flex items-center space-x-6 text-gray-300 font-medium">
-        <Link to="/" className="hover:text-blue-400 transition" aria-label="Home">Home</Link>
-        <Link to="/product" className="hover:text-blue-400 transition" aria-label="Shop Products">Shop</Link>
-        <Link to="/about" className="hover:text-blue-400 transition" aria-label="About Us">About</Link>
-        <Link to="/contact" className="hover:text-blue-400 transition" aria-label="Contact Us">Contact</Link>
+        <Link to="/" className="hover:text-blue-400 transition">Home</Link>
+        <Link to="/product" className="hover:text-blue-400 transition">Shop</Link>
+        <Link to="/about" className="hover:text-blue-400 transition">About</Link>
+        <Link to="/contact" className="hover:text-blue-400 transition">Contact</Link>
 
         {user?.role === "admin" && (
-          <Link to="/dashboard" className="hover:text-blue-400 transition font-semibold" aria-label="Admin Dashboard">
+          <Link to="/dashboard" className="hover:text-blue-400 font-semibold transition">
             Dashboard
           </Link>
         )}
@@ -41,7 +49,8 @@ const Navbar = () => {
           className="relative text-gray-300 hover:text-blue-400 transition"
         >
           <FaShoppingCart size={24} />
-          {/* You can add a badge here if needed */}
+          {/* Optional: Cart Badge */}
+          {/* <span className="absolute -top-2 -right-2 text-xs bg-red-600 text-white px-1.5 rounded-full">3</span> */}
         </button>
 
         {isAuthenticated() ? (
@@ -59,8 +68,8 @@ const Navbar = () => {
           </>
         ) : (
           <>
-            <Link to="/login" className="hover:text-blue-400 transition" aria-label="Login">Login</Link>
-            <Link to="/signup" className="hover:text-blue-400 transition" aria-label="Signup">Signup</Link>
+            <Link to="/login" className="hover:text-blue-400 transition">Login</Link>
+            <Link to="/signup" className="hover:text-blue-400 transition">Signup</Link>
           </>
         )}
       </div>

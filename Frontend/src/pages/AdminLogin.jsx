@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import '../index.css';
+import "../index.css";
 
 const AdminLoginPage = () => {
   const navigate = useNavigate();
@@ -32,13 +32,16 @@ const AdminLoginPage = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:5000/api/auth/admin/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(credentials),
-      });
+      const response = await fetch(
+        "http://localhost:5000/api/auth/admin/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(credentials),
+        }
+      );
 
       const data = await response.json();
 
@@ -60,15 +63,11 @@ const AdminLoginPage = () => {
         text: "Welcome back, Admin!",
         timer: 1500,
         showConfirmButton: false,
+      }).then(() => {
+        navigate("/dashboard");
       });
 
-      // ✅ Redirect to admin dashboard
-      setTimeout(() => {
-        navigate("/admin/dashboard");
-      }, 1500);
-
       setCredentials({ email: "", password: "" });
-
     } catch (error) {
       Swal.fire({
         icon: "error",
@@ -88,7 +87,10 @@ const AdminLoginPage = () => {
           className="bg-white p-6 rounded-lg shadow-lg space-y-5"
         >
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Admin Email
             </label>
             <input
@@ -103,7 +105,10 @@ const AdminLoginPage = () => {
             />
           </div>
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Password
             </label>
             <input

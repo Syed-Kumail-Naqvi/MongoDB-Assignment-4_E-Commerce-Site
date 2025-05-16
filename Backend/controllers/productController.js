@@ -1,33 +1,25 @@
 const Product = require("../models/Product");
 const cloudinary = require("../config/cloudinary");
-const fs = require("fs");
 
 // Create product
 const createProduct = async (req, res) => {
   try {
-    const { name, price, description } = req.body;
+    const { name, price, description, category } = req.body;
 
-    // Upload image to Cloudinary
-    const result = await cloudinary.uploader.upload(req.file.path, {
-      folder: "ecommerce_products",
-    });
-
-    // Create product
     const product = new Product({
       name,
       price,
       description,
-      image: result.secure_url,
-      cloudinary_id: result.public_id,
+      category,
+      image: req.file.path, // Cloudinary URL
+      cloudinary_id: req.file.filename, // public_id from Cloudinary
     });
 
     await product.save();
 
-    // Delete local file after upload
-    fs.unlinkSync(req.file.path);
-
     res.status(201).json({ success: true, product });
   } catch (error) {
+    console.error("Error in createProduct:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -62,27 +54,25 @@ const updateProduct = async (req, res) => {
 
     if (!product) return res.status(404).json({ Message: "Product Not Found!" });
 
-    // If new image uploaded, delete old one and upload new
+    // If image updated
     if (req.file) {
+      // delete old one from Cloudinary
       await cloudinary.uploader.destroy(product.cloudinary_id);
-      const result = await cloudinary.uploader.upload(req.file.path, {
-        folder: "ecommerce_products",
-      });
 
-      product.image = result.secure_url;
-      product.cloudinary_id = result.public_id;
-
-      // Delete local file
-      fs.unlinkSync(req.file.path);
+      product.image = req.file.path; // Cloudinary URL
+      product.cloudinary_id = req.file.filename; // new Cloudinary public_id
     }
 
     product.name = name || product.name;
     product.price = price || product.price;
     product.description = description || product.description;
+    product.category = category || product.category;
 
     await product.save();
+
     res.status(200).json({ success: true, product });
   } catch (error) {
+    console.error("Error in updateProduct:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };

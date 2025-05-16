@@ -2,7 +2,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const route = require('./routes/Route'); 
-const { protect, protectAdmin, errorHandler } = require('./middleware/middleware');
+const { errorHandler } = require('./middleware/middleware');
 const cors = require('cors');
 const fileUpload = require('express-fileupload');
 

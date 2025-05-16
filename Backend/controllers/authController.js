@@ -1,9 +1,10 @@
 const User = require('../models/user');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 
-// Generate JWT Token
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
+// Generate JWT Token with id and role
+const generateToken = (id, role) => {
+  return jwt.sign({ id, role }, process.env.JWT_SECRET, {
     expiresIn: '30d',
   });
 };
@@ -22,7 +23,8 @@ exports.registerUser = async (req, res) => {
       return res.status(400).json({ message: 'User already exists!' });
     }
 
-    const user = await User.create({ name, email, password });
+    // Default role to "user"
+    const user = await User.create({ name, email, password, role: "user" });
 
     if (!user) {
       return res.status(400).json({ message: "Invalid user data" });
@@ -33,7 +35,7 @@ exports.registerUser = async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
-      token: generateToken(user._id),
+      token: generateToken(user._id, user.role),
     });
 
     console.log("✅ User registered successfully!");
@@ -56,11 +58,13 @@ exports.loginUser = async (req, res) => {
 
     if (user && (await user.matchPassword(password))) {
       return res.json({
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        token: generateToken(user._id),
+        token: generateToken(user._id, user.role),
+        user: {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        },
       });
     }
 
@@ -68,5 +72,42 @@ exports.loginUser = async (req, res) => {
   } catch (error) {
     console.error("❌ Login error:", error.message);
     res.status(500).json({ message: 'Server Error' });
+  }
+};
+
+// @desc Admin Login User
+exports.adminLoginUser = async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ message: "Email and Password are required" });
+  }
+
+  try {
+    // Find admin by email and role
+    const admin = await User.findOne({ email, role: "admin" });
+
+    if (!admin) {
+      return res.status(401).json({ message: "Invalid admin credentials" });
+    }
+
+    // Verify password
+    const isMatch = await bcrypt.compare(password, admin.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid admin credentials" });
+    }
+
+    // Generate token with admin role
+    const token = generateToken(admin._id, admin.role);
+
+    res.status(200).json({
+      token,
+      name: admin.name,
+      email: admin.email,
+      role: admin.role,
+    });
+  } catch (error) {
+    console.error("❌ Admin login error:", error.message);
+    res.status(500).json({ message: "Server Error" });
   }
 };
