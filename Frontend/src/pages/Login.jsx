@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import Swal from "sweetalert2";
 import "../index.css";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
+import { useAuth } from '../Context/useAuthHook';
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const { login } = useAuth(); // Get the login function from AuthContext
 
   const [credentials, setCredentials] = useState({
     email: "",
@@ -49,9 +51,15 @@ const LoginPage = () => {
         return;
       }
 
-      // Store token and user info separately
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
+      // --- CRITICAL CHANGE HERE ---
+      // Instead of manually setting localStorage, use the login function from AuthContext
+      // This function already handles setting 'userToken' and updating context state.
+      if (data.token && data.user) {
+        login(data.token, data.user); // Call AuthContext's login function
+      } else {
+        throw new Error("Login response missing token or user data.");
+      }
+      // --- END CRITICAL CHANGE ---
 
       Swal.fire({
         icon: "success",
@@ -74,19 +82,21 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 py-10">
-      <div className="max-w-md mx-auto px-6">
-        <h2 className="text-3xl font-semibold mb-6 text-center">
-          Login to Your Account
+    // Main container background will now respond to dark mode
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center py-10 px-4 sm:px-6 lg:px-8
+                    dark:bg-gray-900 transition-colors duration-300">
+      <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-xl animate-fade-in-up
+                      dark:bg-gray-800 dark:shadow-2xl"> {/* Dark mode styles */}
+        <h2 className="text-4xl font-extrabold text-gray-900 mb-8 text-center
+                       dark:text-white"> {/* Dark mode text */}
+          Welcome Back!
         </h2>
-        <form
-          onSubmit={handleSubmit}
-          className="bg-white p-6 rounded-lg shadow-lg space-y-5"
-        >
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label
               htmlFor="email"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="block text-sm font-semibold text-gray-700 mb-2
+                         dark:text-gray-200" /* Dark mode text */
             >
               Email Address
             </label>
@@ -97,14 +107,16 @@ const LoginPage = () => {
               value={credentials.email}
               onChange={handleInputChange}
               required
-              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 text-gray-800
+                         dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-400" /* Dark mode styles */
               placeholder="your.email@example.com"
             />
           </div>
           <div>
             <label
               htmlFor="password"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="block text-sm font-semibold text-gray-700 mb-2
+                         dark:text-gray-200" /* Dark mode text */
             >
               Password
             </label>
@@ -115,16 +127,40 @@ const LoginPage = () => {
               value={credentials.password}
               onChange={handleInputChange}
               required
-              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 text-gray-800
+                         dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-400" /* Dark mode styles */
               placeholder="Enter your password"
             />
           </div>
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700 transition duration-300"
+            className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 font-bold text-lg"
           >
             Log In
           </button>
+
+          <p className="mt-6 text-center text-gray-600 text-sm
+                        dark:text-gray-300"> {/* Dark mode text */}
+            Don't have an account?{" "}
+            <span
+              onClick={() => navigate("/signup")}
+              className="font-medium text-blue-600 hover:text-blue-700 cursor-pointer transition-colors duration-200
+                         dark:text-blue-400 dark:hover:text-blue-300" /* Dark mode link */
+            >
+              Sign up here
+            </span>
+          </p>
+          <p className="mt-4 text-center text-gray-600 text-sm
+                        dark:text-gray-300"> {/* Dark mode text */}
+            Want to browse our products?{" "}
+            <span
+              onClick={() => navigate("/products")}
+              className="font-medium text-purple-600 hover:text-purple-700 cursor-pointer transition-colors duration-200
+                         dark:text-purple-400 dark:hover:text-purple-300" /* Dark mode link */
+            >
+              Visit our Store!
+            </span>
+          </p>
         </form>
       </div>
     </div>

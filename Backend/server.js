@@ -1,10 +1,9 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
-const route = require('./routes/Route'); 
+const route = require('./routes/Route');
 const { errorHandler } = require('./middleware/middleware');
 const cors = require('cors');
-const fileUpload = require('express-fileupload');
 
 dotenv.config();
 const app = express();
@@ -16,10 +15,9 @@ connectDB();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(fileUpload({ useTempFiles: true }));
 
 // Routes
-app.use("/api", route);
+app.use("/api", route); 
 
 // Error handler
 app.use(errorHandler);

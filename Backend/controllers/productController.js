@@ -16,6 +16,8 @@ const createProduct = async (req, res) => {
     });
 
     await product.save();
+    console.log(product);
+
 
     res.status(201).json({ success: true, product });
   } catch (error) {
@@ -49,10 +51,11 @@ const getSingleProduct = async (req, res) => {
 // Update product
 const updateProduct = async (req, res) => {
   try {
-    const { name, price, description } = req.body;
-    const product = await Product.findById(req.params.id);
+    const { name, price, description, category } = req.body; // Added category here
 
-    if (!product) return res.status(404).json({ Message: "Product Not Found!" });
+    let product = await Product.findById(req.params.id);
+
+    if (!product) return res.status(404).json({ message: "Product Not Found!" }); // Consistent message key
 
     // If image updated
     if (req.file) {
@@ -63,12 +66,16 @@ const updateProduct = async (req, res) => {
       product.cloudinary_id = req.file.filename; // new Cloudinary public_id
     }
 
-    product.name = name || product.name;
-    product.price = price || product.price;
-    product.description = description || product.description;
-    product.category = category || product.category;
+    // Prepare update object
+    const updateFields = {
+      name: name || product.name,
+      price: price || product.price,
+      description: description || product.description,
+      category: category || product.category, // Now 'category' is available
+    };
 
-    await product.save();
+    // Update the product using findByIdAndUpdate
+    product = await Product.findByIdAndUpdate(req.params.id, updateFields, { new: true });
 
     res.status(200).json({ success: true, product });
   } catch (error) {

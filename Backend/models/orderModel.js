@@ -4,14 +4,15 @@ const orderSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: 'User', // References the User model
       required: true,
     },
     products: [
       {
         product: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: 'Product',
+          ref: 'Product', // References the Product model
+          required: true,
         },
         quantity: {
           type: Number,
@@ -42,7 +43,9 @@ const orderSchema = new mongoose.Schema(
       type: Date,
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true, // Automatically adds createdAt and updatedAt fields
+  }
 );
 
 module.exports = mongoose.model('Order', orderSchema);

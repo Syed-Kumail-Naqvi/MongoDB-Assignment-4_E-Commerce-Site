@@ -10,6 +10,8 @@ const storage = new CloudinaryStorage({
   },
 });
 
-const upload = multer({ storage });
+// *** THE FIX IS HERE ***
+// Specify that you are expecting a SINGLE file upload with the field name 'image'
+const upload = multer({ storage }).single('image'); // <-- Add .single('image')
 
 module.exports = upload;

@@ -2,11 +2,17 @@ import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
+import { FaPlus, FaEdit, FaTrash, FaUsers, FaBoxOpen } from 'react-icons/fa';
+import { useAuth } from '../Context/useAuthHook';
 
 const Dashboard = () => {
   const [usersWithOrders, setUsersWithOrders] = useState([]);
   const [userLoading, setUserLoading] = useState(false);
+  const [totalUsers, setTotalUsers] = useState(0);
+
   const [showModal, setShowModal] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [currentProduct, setCurrentProduct] = useState(null);
   const [newProduct, setNewProduct] = useState({
     name: "",
     description: "",
@@ -16,103 +22,219 @@ const Dashboard = () => {
   });
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [totalProducts, setTotalProducts] = useState(0);
 
+  const { user: loggedInUser } = useAuth(); // Get the logged-in user from AuthContext
+
+  // --- Product Fetching ---
   const fetchProducts = async () => {
     try {
       setLoading(true);
       const res = await fetch("http://localhost:5000/api/products");
       const data = await res.json();
-      if (res.ok && Array.isArray(data)) {
-        setProducts(data);
+
+      if (res.ok && data.success && Array.isArray(data.products)) {
+        setProducts(data.products);
+        setTotalProducts(data.products.length);
       } else {
         setProducts([]);
-        Swal.fire("Error", data.message || "Invalid product data", "error");
+        setTotalProducts(0);
+        Swal.fire(
+          "Error",
+          data.message || "Failed to fetch products or invalid data format",
+          "error"
+        );
       }
     } catch (err) {
       console.error("Fetch Error:", err);
+      setProducts([]);
+      setTotalProducts(0);
       Swal.fire("Error", "Server error while fetching products", "error");
     } finally {
       setLoading(false);
     }
   };
 
+  // --- User Fetching ---
   const fetchUsersWithOrders = async () => {
     try {
       setUserLoading(true);
       const res = await fetch("http://localhost:5000/api/admin/users", {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+          Authorization: `Bearer ${localStorage.getItem("userToken")}`,
         },
       });
       const data = await res.json();
+
       if (res.ok && Array.isArray(data)) {
         setUsersWithOrders(data);
+        setTotalUsers(data.length);
       } else {
+        console.error("Failed to fetch users or unexpected data format:", data);
         setUsersWithOrders([]);
-        Swal.fire("Error", data.message || "Invalid user data", "error");
+        setTotalUsers(0);
+        Swal.fire(
+          "Error",
+          data.message ||
+            "Failed to fetch users or unexpected data format from server.",
+          "error"
+        );
       }
     } catch (err) {
       console.error("User Fetch Error:", err);
+      setUsersWithOrders([]);
+      setTotalUsers(0);
       Swal.fire("Error", "Server error while fetching users", "error");
     } finally {
       setUserLoading(false);
     }
   };
 
+  // --- Handle Delete User ---
+  const handleDeleteUser = async (userId, userName) => {
+    const confirmed = await Swal.fire({
+      title: "Are you sure?",
+      text: `You are about to delete user: ${userName}. This action cannot be undone!`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, delete them!",
+      confirmButtonColor: "#dc2626", // Red
+      cancelButtonColor: "#6b7280" // Gray
+    });
+
+    if (confirmed.isConfirmed) {
+      try {
+        setUserLoading(true); // Indicate loading for user operations
+        const res = await fetch(`http://localhost:5000/api/admin/users/${userId}`, {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("userToken")}`,
+          },
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          Swal.fire("Deleted!", data.message || "User has been deleted.", "success");
+          fetchUsersWithOrders(); // Refresh the user list
+        } else {
+          Swal.fire("Error", data.message || "Failed to delete user.", "error");
+        }
+      } catch (error) {
+        console.error("Delete User Error:", error);
+        Swal.fire(
+          "Error",
+          "Server error deleting user: " + error.message,
+          "error"
+        );
+      } finally {
+        setUserLoading(false);
+      }
+    }
+  };
+
+  // --- Initial Data Load on Component Mount ---
   useEffect(() => {
     fetchProducts();
     fetchUsersWithOrders();
   }, []);
 
-  const handleAddProduct = async (e) => {
+  // --- Handle Product Input Change ---
+  const handleProductInputChange = (e) => {
+    const { name, value, files } = e.target;
+    setNewProduct({
+      ...newProduct,
+      [name]: files ? files[0] : value,
+    });
+  };
+
+  // --- Open Add Product Modal ---
+  const openAddModal = () => {
+    setIsEditing(false);
+    setCurrentProduct(null);
+    setNewProduct({
+      name: "",
+      description: "",
+      price: "",
+      category: "",
+      image: null,
+    });
+    setShowModal(true);
+  };
+
+  // --- Open Edit Product Modal ---
+  const openEditModal = (product) => {
+    setIsEditing(true);
+    setCurrentProduct(product);
+    setNewProduct({
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      category: product.category,
+      image: null,
+    });
+    setShowModal(true);
+  };
+
+  // --- Add/Update Product Handler ---
+  const handleAddUpdateProduct = async (e) => {
     e.preventDefault();
 
-    const { name, price, category, image } = newProduct;
+    const { name, description, price, category, image } = newProduct;
 
-    if (!name || !price || !category || !image) {
-      Swal.fire("Warning", "Please fill all required fields", "warning");
+    if (!name || !description || !price || !category) {
+      Swal.fire("Warning", "Please fill all required fields.", "warning");
       return;
     }
 
+    if (!isEditing && !image) {
+        Swal.fire("Warning", "Please select an image for the new product.", "warning");
+        return;
+    }
+
     const formData = new FormData();
-    Object.entries(newProduct).forEach(([key, val]) => {
-      formData.append(key, val);
-    });
+    formData.append("name", name);
+    formData.append("price", price);
+    formData.append("category", category);
+    formData.append("description", description);
+    if (image) {
+      formData.append("image", image);
+    }
 
     try {
       setLoading(true);
-      const res = await fetch("http://localhost:5000/api/products", {
-        method: "POST",
+      const method = isEditing ? "PUT" : "POST";
+      const url = isEditing
+        ? `http://localhost:5000/api/products/${currentProduct._id}`
+        : "http://localhost:5000/api/products";
+
+      const res = await fetch(url, {
+        method: method,
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+          Authorization: `Bearer ${localStorage.getItem("userToken")}`,
         },
         body: formData,
       });
 
       const data = await res.json();
 
-      if (res.ok) {
-        Swal.fire("Success", "Product added successfully!", "success");
+      if (res.ok && data.success) {
+        Swal.fire("Success", `Product ${isEditing ? 'updated' : 'added'} successfully!`, "success");
         setShowModal(false);
-        setNewProduct({
-          name: "",
-          description: "",
-          price: "",
-          category: "",
-          image: null,
-        });
-        setProducts([data, ...products]);
+        setNewProduct({ name: "", description: "", price: "", category: "", image: null });
+        setCurrentProduct(null);
+        fetchProducts();
       } else {
-        Swal.fire("Error", data.message || "Failed to add product", "error");
+        Swal.fire("Error", data.message || `Failed to ${isEditing ? 'update' : 'add'} product`, "error");
       }
     } catch (error) {
-      console.error("Add Product Error:", error);
-      Swal.fire("Error", "Something went wrong", "error");
+      console.error("Product Operation Error:", error);
+      Swal.fire("Error", "Something went wrong. Please try again.", "error");
     } finally {
       setLoading(false);
     }
   };
 
+  // --- Delete Product Handler ---
   const handleDelete = async (productId) => {
     const confirmed = await Swal.fire({
       title: "Are you sure?",
@@ -120,6 +242,8 @@ const Dashboard = () => {
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "Yes, delete it!",
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#6b7280"
     });
 
     if (confirmed.isConfirmed) {
@@ -130,7 +254,7 @@ const Dashboard = () => {
           {
             method: "DELETE",
             headers: {
-              Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+              Authorization: `Bearer ${localStorage.getItem("userToken")}`,
             },
           }
         );
@@ -142,7 +266,11 @@ const Dashboard = () => {
           Swal.fire("Error", data.message || "Failed to delete", "error");
         }
       } catch (error) {
-        Swal.fire("Error", "Server error deleting product", "error");
+        Swal.fire(
+          "Error",
+          "Server error deleting product: " + error.message,
+          "error"
+        );
       } finally {
         setLoading(false);
       }
@@ -150,39 +278,104 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-800">
+    // Main container background will now respond to dark mode
+    <div className="min-h-screen bg-gray-100 flex flex-col
+                    dark:bg-gray-900 transition-colors duration-300">
       <Navbar />
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
+      <div className="flex-grow py-10">
+        <h1 className="text-4xl font-extrabold text-gray-900 mb-10 text-center
+                       dark:text-white">
+          Admin Dashboard
+        </h1>
 
-        {/* User Dashboard */}
-        <section className="mb-10">
-          <h2 className="text-2xl font-bold mb-4">User Dashboard</h2>
-          <div className="overflow-x-auto bg-white rounded-xl shadow">
+        {/* --- Numbers Display Section --- */}
+        <section className="mb-12 px-4 sm:px-6 lg:px-8 mx-auto md:max-w-7xl">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Total Users Card */}
+            <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl shadow-lg p-6 flex items-center justify-between text-white transform transition-transform duration-300 hover:scale-[1.02]
+                            dark:from-blue-700 dark:to-blue-800">
+              <div className="flex items-center space-x-4">
+                <FaUsers className="text-4xl opacity-80" />
+                <div>
+                  <p className="text-lg font-medium">Total Users</p>
+                  <p className="text-5xl font-extrabold mt-1">
+                    {userLoading ? (
+                        <span className="animate-pulse">...</span>
+                    ) : (
+                        totalUsers
+                    )}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Total Products Card */}
+            <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-2xl shadow-lg p-6 flex items-center justify-between text-white transform transition-transform duration-300 hover:scale-[1.02]
+                            dark:from-green-700 dark:to-green-800">
+              <div className="flex items-center space-x-4">
+                <FaBoxOpen className="text-4xl opacity-80" />
+                <div>
+                  <p className="text-lg font-medium">Total Products</p>
+                  <p className="text-5xl font-extrabold mt-1">
+                    {loading ? (
+                        <span className="animate-pulse">...</span>
+                    ) : (
+                        totalProducts
+                    )}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* --- User Management Section --- */}
+        <section className="mb-12 bg-white rounded-none md:rounded-2xl shadow-xl p-6 sm:p-8 px-4 sm:px-6 lg:px-8 mx-auto md:max-w-7xl md:mx-auto
+                            dark:bg-gray-800 dark:shadow-2xl">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-3
+                           dark:text-blue-400">
+              <FaUsers className="text-blue-500" /> User Management
+            </h2>
+          </div>
+          <div className="overflow-x-auto">
             {userLoading ? (
-              <p className="p-4 text-gray-500">Loading users...</p>
+              <p className="p-6 text-center text-gray-500 text-lg dark:text-gray-400">Loading users...</p>
             ) : usersWithOrders.length === 0 ? (
-              <p className="p-4 text-gray-500">No users found.</p>
+              <p className="p-6 text-center text-gray-500 text-lg dark:text-gray-400">No users found.</p>
             ) : (
-              <table className="min-w-full divide-y divide-gray-200 text-sm">
-                <thead className="bg-gray-100 text-left">
+              <table className="min-w-full divide-y divide-gray-200 border border-gray-200 rounded-lg overflow-hidden
+                                dark:divide-gray-700 dark:border-gray-700">
+                <thead className="bg-blue-600 text-white dark:bg-blue-700">
                   <tr>
-                    <th className="px-6 py-3 font-semibold text-gray-700">#</th>
-                    <th className="px-6 py-3 font-semibold text-gray-700">Name</th>
-                    <th className="px-6 py-3 font-semibold text-gray-700">Email</th>
-                    <th className="px-6 py-3 font-semibold text-gray-700">Role</th>
-                    <th className="px-6 py-3 font-semibold text-gray-700">Orders</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">#</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Name</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Email</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Role</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Orders</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-700 dark:divide-gray-600">
                   {usersWithOrders.map((user, index) => (
-                    <tr key={user._id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4">{index + 1}</td>
-                      <td className="px-6 py-4 font-medium">{user.name}</td>
-                      <td className="px-6 py-4 text-blue-600">{user.email}</td>
-                      <td className="px-6 py-4 capitalize">{user.role || "user"}</td>
-                      <td className="px-6 py-4">{user.orders?.length || 0}</td>
+                    <tr key={user._id} className="hover:bg-gray-50 transition-colors duration-150 dark:hover:bg-gray-600">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-200">{index + 1}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{user.name}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600 dark:text-blue-300">{user.email}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm capitalize text-gray-700 dark:text-gray-200">
+                        {user.role || "user"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-200">{user.orders?.length || 0}</td>
+                      <td className="px-6 py-4">
+                        <button
+                          className="bg-red-600 text-white px-3 py-2 rounded-md hover:bg-red-700 transition-colors duration-200 flex items-center justify-center gap-1 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                          onClick={() => handleDeleteUser(user._id, user.name || user.email)}
+                          disabled={userLoading || (loggedInUser && loggedInUser._id === user._id)}
+                        >
+                          <FaTrash /> Delete
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -191,55 +384,69 @@ const Dashboard = () => {
           </div>
         </section>
 
-        {/* Product Dashboard */}
-        <section>
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold">Product Dashboard</h2>
+        {/* --- Product Management Section --- */}
+        <section className="bg-white rounded-none md:rounded-2xl shadow-xl p-6 sm:p-8 px-4 sm:px-6 lg:px-8 mx-auto md:max-w-7xl md:mx-auto
+                            dark:bg-gray-800 dark:shadow-2xl">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-3
+                           dark:text-green-400">
+              <FaBoxOpen className="text-green-500" /> Product Management
+            </h2>
             <button
-              className="bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 disabled:opacity-50"
-              onClick={() => setShowModal(true)}
+              className="bg-green-600 text-white px-6 py-3 rounded-full shadow-lg hover:bg-green-700 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              onClick={openAddModal}
               disabled={loading}
             >
-              Add Product
+              <FaPlus /> Add New Product
             </button>
           </div>
 
-          <div className="bg-white shadow rounded-xl p-4">
+          <div className="overflow-x-auto">
             {loading ? (
-              <p>Loading products...</p>
+              <p className="p-6 text-center text-gray-500 text-lg dark:text-gray-400">Loading products...</p>
             ) : products.length === 0 ? (
-              <p>No Products Found.</p>
+              <p className="p-6 text-center text-gray-500 text-lg dark:text-gray-400">No products found.</p>
             ) : (
-              <table className="w-full table-auto border-collapse">
-                <thead>
-                  <tr className="bg-gray-200">
-                    <th className="border px-4 py-2">Name</th>
-                    <th className="border px-4 py-2">Price</th>
-                    <th className="border px-4 py-2">Category</th>
-                    <th className="border px-4 py-2">Actions</th>
+              <table className="min-w-full divide-y divide-gray-200 border border-gray-200 rounded-lg overflow-hidden
+                                dark:divide-gray-700 dark:border-gray-700">
+                <thead className="bg-indigo-600 text-white dark:bg-indigo-700">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Image</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Name</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Price</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Category</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-700 dark:divide-gray-600">
                   {products.map((product) => (
-                    <tr key={product._id} className="hover:bg-gray-100">
-                      <td className="border px-4 py-2">{product.name}</td>
-                      <td className="border px-4 py-2">${product.price}</td>
-                      <td className="border px-4 py-2">{product.category}</td>
-                      <td className="border px-4 py-2 space-x-2">
-                        <button
-                          className="bg-yellow-400 text-white px-3 py-1 rounded hover:bg-yellow-500"
-                          onClick={() =>
-                            Swal.fire("Info", "Edit functionality coming soon!", "info")
-                          }
-                        >
-                          Edit
-                        </button>
-                        <button
-                          className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
-                          onClick={() => handleDelete(product._id)}
-                        >
-                          Delete
-                        </button>
+                    <tr key={product._id} className="hover:bg-gray-50 transition-colors duration-150 dark:hover:bg-gray-600">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <img
+                          src={product.image}
+                          alt={product.name}
+                          className="h-16 w-16 object-cover rounded-md shadow-sm"
+                        />
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{product.name}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-200">${product.price.toFixed(2)}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 capitalize dark:text-gray-200">{product.category}</td>
+
+                      <td className="px-6 py-4">
+                        <div className="flex flex-col sm:flex-row sm:space-x-2 space-y-2 sm:space-y-0">
+                          <button
+                            className="bg-yellow-500 text-white px-3 py-2 rounded-md hover:bg-yellow-600 transition-colors duration-200 flex items-center justify-center gap-1 text-sm flex-shrink-0"
+                            onClick={() => openEditModal(product)}
+                          >
+                            <FaEdit /> Edit
+                          </button>
+                          <button
+                            className="bg-red-600 text-white px-3 py-2 rounded-md hover:bg-red-700 transition-colors duration-200 flex items-center justify-center gap-1 text-sm flex-shrink-0"
+                            onClick={() => handleDelete(product._id)}
+                          >
+                            <FaTrash /> Delete
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -250,69 +457,105 @@ const Dashboard = () => {
         </section>
       </div>
 
-      {/* Modal */}
+      {/* --- Product Add/Edit Modal --- */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl w-[90%] max-w-md shadow-lg">
-            <h2 className="text-xl font-semibold mb-4">Add Product</h2>
-            <form onSubmit={(e) => handleAddProduct(e)}>
-              <input
-                type="text"
-                placeholder="Name"
-                className="w-full mb-2 p-2 border rounded"
-                value={newProduct.name}
-                onChange={(e) =>
-                  setNewProduct({ ...newProduct, name: e.target.value })
-                }
-              />
-              <textarea
-                placeholder="Description"
-                className="w-full mb-2 p-2 border rounded"
-                value={newProduct.description}
-                onChange={(e) =>
-                  setNewProduct({ ...newProduct, description: e.target.value })
-                }
-              ></textarea>
-              <input
-                type="number"
-                placeholder="Price"
-                className="w-full mb-2 p-2 border rounded"
-                value={newProduct.price}
-                onChange={(e) =>
-                  setNewProduct({ ...newProduct, price: e.target.value })
-                }
-              />
-              <input
-                type="text"
-                placeholder="Category"
-                className="w-full mb-2 p-2 border rounded"
-                value={newProduct.category}
-                onChange={(e) =>
-                  setNewProduct({ ...newProduct, category: e.target.value })
-                }
-              />
-              <input
-                type="file"
-                accept="image/*"
-                className="w-full mb-4"
-                onChange={(e) =>
-                  setNewProduct({ ...newProduct, image: e.target.files[0] })
-                }
-              />
-              <div className="flex justify-end gap-2">
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+          <div className="bg-white p-8 rounded-2xl w-full max-w-lg shadow-2xl transform scale-95 animate-scale-in
+                          dark:bg-gray-700">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center
+                           dark:text-white">
+              {isEditing ? "Edit Product" : "Add New Product"}
+            </h2>
+            <form onSubmit={handleAddUpdateProduct} className="space-y-4">
+              <div>
+                <label htmlFor="productName" className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-200">Product Name</label>
+                <input
+                  type="text"
+                  id="productName"
+                  name="name"
+                  placeholder="e.g., Wireless Headphones"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800
+                             dark:bg-gray-600 dark:border-gray-500 dark:text-white"
+                  value={newProduct.name}
+                  onChange={handleProductInputChange}
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor="productDescription" className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-200">Description</label>
+                <textarea
+                  id="productDescription"
+                  name="description"
+                  placeholder="A brief description of the product..."
+                  rows="3"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 resize-y text-gray-800
+                             dark:bg-gray-600 dark:border-gray-500 dark:text-white"
+                  value={newProduct.description}
+                  onChange={handleProductInputChange}
+                  required
+                ></textarea>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="productPrice" className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-200">Price ($)</label>
+                  <input
+                    type="number"
+                    id="productPrice"
+                    name="price"
+                    placeholder="99.99"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800
+                             dark:bg-gray-600 dark:border-gray-500 dark:text-white"
+                    value={newProduct.price}
+                    onChange={handleProductInputChange}
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="productCategory" className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-200">Category</label>
+                  <input
+                    type="text"
+                    id="productCategory"
+                    name="category"
+                    placeholder="e.g., Electronics"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800
+                             dark:bg-gray-600 dark:border-gray-500 dark:text-white"
+                    value={newProduct.category}
+                    onChange={handleProductInputChange}
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <label htmlFor="productImage" className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-200">Product Image</label>
+                <input
+                  type="file"
+                  id="productImage"
+                  name="image"
+                  accept="image/*"
+                  className="w-full p-3 border border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-all duration-200 text-gray-800
+                             dark:file:bg-blue-800 dark:file:text-white dark:hover:file:bg-blue-700 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
+                  onChange={handleProductInputChange}
+                  required={!isEditing}
+                />
+                  {isEditing && currentProduct?.image && (
+                    <p className="text-sm text-gray-500 mt-2 dark:text-gray-300">Current image will be replaced if a new one is selected.</p>
+                )}
+              </div>
+              <div className="flex justify-end gap-3 pt-4">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
+                  className="bg-gray-300 text-gray-800 px-6 py-3 rounded-full hover:bg-gray-400 transition-colors duration-200 font-semibold shadow
+                             dark:bg-gray-600 dark:text-white dark:hover:bg-gray-500"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                  className="bg-blue-600 text-white px-6 py-3 rounded-full hover:bg-blue-700 transition-colors duration-200 font-semibold shadow disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={loading}
                 >
-                  {loading ? "Adding..." : "Add Product"}
+                  {loading ? (isEditing ? "Updating..." : "Adding...") : (isEditing ? "Update Product" : "Add Product")}
                 </button>
               </div>
             </form>

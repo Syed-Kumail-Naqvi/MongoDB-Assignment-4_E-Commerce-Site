@@ -21,6 +21,11 @@ const userSchema = new mongoose.Schema(
       enum: ['user', 'admin'],
       default: 'user',
     },
+    profileImage: { // Stores the URL of the profile image
+      type: String,
+      // This will be used if a user doesn't upload a custom image.
+      default: 'https://placehold.co/100x100/A0AEC0/FFFFFF?text=AVATAR',
+    },
   },
   { timestamps: true }
 );
