@@ -17,7 +17,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
-app.use("/api", route); 
+app.use("/", route); 
 
 // Error handler
 app.use(errorHandler);
