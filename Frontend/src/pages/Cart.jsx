@@ -127,22 +127,22 @@ const CartPage = () => {
   };
 
   return (
-    // Main container background will now respond to dark mode
+    // Main container background will now respond to dark mode and handles overall responsive layout
     <div className="min-h-screen bg-gray-100 flex flex-col
-                    dark:bg-gray-900 transition-colors duration-300">
+                         dark:bg-gray-900 transition-colors duration-300">
       <Navbar />
 
       <div className="max-w-7xl mx-auto px-4 py-16 flex-grow">
         <h2 className="text-4xl font-extrabold text-gray-900 mb-8 text-center
-                       dark:text-white">Your Shopping Cart</h2>
+                         dark:text-white">Your Shopping Cart</h2>
 
         {cartItems.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-lg shadow-xl p-8
-                          dark:bg-gray-800 dark:shadow-2xl"> {/* Dark mode styles */}
+                           dark:bg-gray-800 dark:shadow-2xl"> {/* Dark mode styles */}
             <h3 className="text-2xl font-semibold mb-4 text-gray-800
-                           dark:text-gray-100">Your cart is empty</h3> {/* Dark mode text */}
+                             dark:text-gray-100">Your cart is empty</h3> {/* Dark mode text */}
             <p className="text-gray-600 mb-6
-                          dark:text-gray-300">
+                           dark:text-gray-300">
               Looks like you haven’t added anything yet. Go ahead and explore our amazing products!
             </p>
             <Link
@@ -153,8 +153,8 @@ const CartPage = () => {
             </Link>
           </div>
         ) : (
-          <div className="flex flex-col lg:flex-row gap-8">
-            {/* Cart Items List */}
+          <div className="flex flex-col lg:flex-row gap-8"> {/* Responsive: Stacks vertically on small, horizontal on large screens */}
+            {/* Cart Items List - Takes 2/3 width on large screens, full width on small */}
             <div className="lg:w-2/3 space-y-6">
               {cartItems.map((item) => (
                 <div
@@ -162,7 +162,7 @@ const CartPage = () => {
                   className="bg-white rounded-xl shadow-lg p-6 flex flex-col sm:flex-row items-center justify-between transition-transform duration-200 hover:scale-[1.01]
                              dark:bg-gray-800 dark:shadow-xl dark:border dark:border-gray-700 dark:hover:bg-gray-700" /* Dark mode styles */
                 >
-                  <div className="flex items-center gap-4 w-full sm:w-auto mb-4 sm:mb-0">
+                  <div className="flex items-center gap-4 w-full sm:w-auto mb-4 sm:mb-0"> {/* Stacks on mobile, inline on small+ */}
                     <img
                       src={item.image}
                       alt={item.name}
@@ -177,13 +177,13 @@ const CartPage = () => {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4 sm:ml-auto">
+                  <div className="flex items-center gap-4 sm:ml-auto"> {/* Aligns to right on small+, stacks on mobile */}
                     <div className="flex items-center space-x-2 bg-gray-100 rounded-full px-3 py-1
-                                   dark:bg-gray-700 dark:border dark:border-gray-600"> {/* Dark mode styles */}
+                                     dark:bg-gray-700 dark:border dark:border-gray-600"> {/* Dark mode styles */}
                       <button
                         onClick={() => decreaseQuantity(item._id)}
                         className="text-gray-700 px-2 py-1 rounded-full hover:bg-gray-200 transition-colors disabled:opacity-50
-                                   dark:text-gray-200 dark:hover:bg-gray-600" /* Dark mode styles */
+                                     dark:text-gray-200 dark:hover:bg-gray-600" /* Dark mode styles */
                         disabled={item.quantity <= 1}
                       >
                         -
@@ -192,7 +192,7 @@ const CartPage = () => {
                       <button
                         onClick={() => increaseQuantity(item._id)}
                         className="text-gray-700 px-2 py-1 rounded-full hover:bg-gray-200 transition-colors
-                                   dark:text-gray-200 dark:hover:bg-gray-600" /* Dark mode styles */
+                                     dark:text-gray-200 dark:hover:bg-gray-600" /* Dark mode styles */
                       >
                         +
                       </button>
@@ -203,7 +203,7 @@ const CartPage = () => {
                     <button
                       onClick={() => removeFromCart(item._id)}
                       className="text-red-500 hover:text-red-700 transition-colors duration-200 ml-4 p-2 rounded-full hover:bg-red-100
-                                 dark:hover:bg-gray-700 dark:text-red-400 dark:hover:text-red-500" /* Dark mode styles */
+                                     dark:hover:bg-gray-700 dark:text-red-400 dark:hover:text-red-500" /* Dark mode styles */
                       title="Remove Item"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -215,11 +215,11 @@ const CartPage = () => {
               ))}
             </div>
 
-            {/* Order Summary & Checkout Form */}
+            {/* Order Summary & Checkout Form - Takes 1/3 width on large screens, full width on small */}
             <div className="lg:w-1/3 bg-white rounded-xl shadow-lg p-6 h-fit sticky top-28
-                            dark:bg-gray-800 dark:shadow-2xl dark:border dark:border-gray-700"> {/* Dark mode styles */}
+                             dark:bg-gray-800 dark:shadow-2xl dark:border dark:border-gray-700"> {/* Dark mode styles */}
               <h3 className="text-2xl font-bold text-gray-900 mb-6 border-b pb-4
-                             dark:text-white dark:border-gray-700">Order Summary</h3> {/* Dark mode styles */}
+                               dark:text-white dark:border-gray-700">Order Summary</h3> {/* Dark mode styles */}
               <div className="flex justify-between items-center text-lg mb-3">
                 <span className="text-gray-700 dark:text-gray-300">Subtotal ({cartItems.length} items):</span> {/* Dark mode text */}
                 <span className="font-semibold text-gray-800 dark:text-gray-100">${getTotalPrice().toFixed(2)}</span> {/* Dark mode text */}
@@ -233,7 +233,7 @@ const CartPage = () => {
                 <span className="text-blue-600 dark:text-blue-400">${getTotalPrice().toFixed(2)}</span> {/* Dark mode text */}
               </div>
 
-              {/* Shipping Address Form */}
+              {/* Shipping Address Form - Inputs are full width and stack correctly */}
               <div className="mt-8 pt-4 border-t dark:border-gray-700"> {/* Dark mode border */}
                 <h4 className="text-xl font-bold text-gray-900 mb-4 dark:text-white">Shipping Information</h4> {/* Dark mode text */}
                 <div className="space-y-3">
@@ -265,7 +265,7 @@ const CartPage = () => {
                       required
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-4"> {/* Keeps postal code and country side-by-side */}
                     <div>
                       <label htmlFor="postalCode" className="block text-sm font-medium text-gray-700 dark:text-gray-200">Postal Code</label> {/* Dark mode text */}
                       <input
@@ -275,7 +275,7 @@ const CartPage = () => {
                         value={shippingAddress.postalCode}
                         onChange={handleShippingAddressChange}
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500
-                                   dark:bg-gray-700 dark:border-gray-600 dark:text-white" /* Dark mode styles */
+                                     dark:bg-gray-700 dark:border-gray-600 dark:text-white" /* Dark mode styles */
                         placeholder="e.g., 75000"
                         required
                       />
@@ -289,7 +289,7 @@ const CartPage = () => {
                         value={shippingAddress.country}
                         onChange={handleShippingAddressChange}
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500
-                                   dark:bg-gray-700 dark:border-gray-600 dark:text-white" /* Dark mode styles */
+                                     dark:bg-gray-700 dark:border-gray-600 dark:text-white" /* Dark mode styles */
                         placeholder="e.g., Pakistan"
                         required
                       />
@@ -298,7 +298,7 @@ const CartPage = () => {
                 </div>
               </div>
 
-              {/* Payment Method Selection */}
+              {/* Payment Method Selection - Radio buttons stack nicely */}
               <div className="mt-8 pt-4 border-t dark:border-gray-700"> {/* Dark mode border */}
                 <h4 className="text-xl font-bold text-gray-900 mb-4 dark:text-white">Payment Method</h4> {/* Dark mode text */}
                 <div className="space-y-2">
@@ -350,6 +350,7 @@ const CartPage = () => {
                 </div>
               </div>
 
+              {/* Action Buttons - Full width for easy tapping */}
               <button
                 onClick={handleCheckout}
                 className="w-full bg-green-600 text-white py-3 mt-8 rounded-full text-lg font-semibold hover:bg-green-700 transition-colors shadow-md transform hover:scale-[1.01] disabled:opacity-50 disabled:cursor-not-allowed"

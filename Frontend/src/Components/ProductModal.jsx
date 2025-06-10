@@ -79,7 +79,7 @@ const ProductModal = ({ product, onClose, token, onProductSuccess }) => {
         : 'https://mongodb-assignment-4-e-commerce-site.onrender.com/products'; // URL for adding new product
       const method = product ? 'PUT' : 'POST'; // PUT for update, POST for add
 
-      // Send the fetch request
+      // Send the fetch request 245+
       const res = await fetch(url, {
         method,
         headers: {

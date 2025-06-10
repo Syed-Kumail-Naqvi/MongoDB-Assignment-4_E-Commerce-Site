@@ -1,6 +1,6 @@
 import React from 'react';
-import { Link } from 'react-router-dom'; // <--- NEW: Import Link for internal navigation
-import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
+import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin } from 'react-icons/fa'; // Ensure FaLinkedin is imported if you want to use it
 
 const Footer = () => {
   return (
@@ -28,20 +28,20 @@ const Footer = () => {
           <h3 className="text-xl font-bold text-white mb-4 dark:text-blue-400">Quick Links</h3>
           <ul className="space-y-2">
             <li>
-              {/* Using Link for internal navigation */}
               <Link to="/products" className="text-gray-300 hover:text-blue-400 transition-colors duration-200 dark:text-gray-400 dark:hover:text-blue-300">Shop All Products</Link>
             </li>
             <li>
-              {/* Using Link for internal navigation */}
               <Link to="/about" className="text-gray-300 hover:text-blue-400 transition-colors duration-200 dark:text-gray-400 dark:hover:text-blue-300">About Us</Link>
             </li>
             <li>
-              {/* Using Link for internal navigation */}
               <Link to="/contact" className="text-gray-300 hover:text-blue-400 transition-colors duration-200 dark:text-gray-400 dark:hover:text-blue-300">Contact Support</Link>
             </li>
             <li>
-              {/* Using Link for a placeholder internal route. Consider creating a /privacy-policy page. */}
               <Link to="/privacy" className="text-gray-300 hover:text-blue-400 transition-colors duration-200 dark:text-gray-400 dark:hover:text-blue-300">Privacy Policy</Link>
+            </li>
+            {/* Add a Terms of Service Link for completeness */}
+            <li>
+              <Link to="/terms" className="text-gray-300 hover:text-blue-400 transition-colors duration-200 dark:text-gray-400 dark:hover:text-blue-300">Terms of Service</Link>
             </li>
           </ul>
         </div>
@@ -50,21 +50,25 @@ const Footer = () => {
         <div className="text-center md:text-left">
           <h3 className="text-xl font-bold text-white mb-4 dark:text-green-400">Connect With Us</h3>
           <div className="flex justify-center md:justify-start space-x-6">
-            {/* For external links, it's best practice to use <a> tags to open in a new tab */}
+            {/* Using FaFacebook from react-icons */}
             <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook"
                className="text-gray-400 hover:text-blue-500 transition-colors duration-200 transform hover:scale-110">
-              <i className="fab fa-facebook-f text-2xl"></i>
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-facebook-icon"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+              <FaFacebook className="text-2xl" />
             </a>
+            {/* Using FaTwitter from react-icons */}
             <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter"
                className="text-gray-400 hover:text-blue-400 transition-colors duration-200 transform hover:scale-110">
-              <i className="fab fa-twitter text-2xl"></i>
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-twitter-icon"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17-17 11.6 2.2.1 4.4-.6 6-2 1.2 1.2 1.8 2.8 1.8 4.8 0 .8-.1 1.6-.3 2.4 0 0-.7 1.5-1.9 2.5 0 0-2.8 1.4-4.8 1.4-2.8 0-5.3-1.8-6.6-4-.6-1.1-1-2.4-1-3.6 0 0-1.2-1.5-2.2-2.5 0 0-2.4-2-4.8-2-.5 0-1-.1-1.5-.3C1 15 2 16 3 17"></path></svg>
+              <FaTwitter className="text-2xl" />
             </a>
+            {/* Using FaInstagram from react-icons */}
             <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram"
                className="text-gray-400 hover:text-pink-500 transition-colors duration-200 transform hover:scale-110">
-              <i className="fab fa-instagram text-2xl"></i>
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-instagram-icon"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line></svg>
+              <FaInstagram className="text-2xl" />
+            </a>
+            {/* Adding a LinkedIn icon for professional presence */}
+            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"
+               className="text-gray-400 hover:text-blue-600 transition-colors duration-200 transform hover:scale-110">
+              <FaLinkedin className="text-2xl" />
             </a>
           </div>
         </div>

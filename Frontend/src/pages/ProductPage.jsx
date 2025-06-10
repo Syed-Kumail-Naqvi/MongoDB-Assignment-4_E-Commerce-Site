@@ -19,6 +19,8 @@ const ProductPage = () => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
+        setError(null); // Clear previous errors
+
         const res = await fetch("https://mongodb-assignment-4-e-commerce-site.onrender.com/products");
 
         if (!res.ok) {
@@ -34,7 +36,7 @@ const ProductPage = () => {
         }
       } catch (err) {
         console.error("Fetch Products Error:", err);
-        setError("Failed to load products. Please try again later.");
+        setError(err.message || "Failed to load products. Please try again later.");
         Swal.fire("Error", err.message || "Failed to load products.", "error");
       } finally {
         setLoading(false);
@@ -75,56 +77,54 @@ const ProductPage = () => {
                     dark:bg-gray-900 dark:text-gray-200 transition-colors duration-300">
       <Navbar />
 
-      <main className="max-w-7xl mx-auto px-6 py-10 flex-grow">
-        <h2 className="text-3xl font-semibold mb-8 text-blue-600
-                       dark:text-blue-400">All Products</h2>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-grow"> {/* Adjusted padding for all screen sizes */}
+        <h2 className="text-3xl sm:text-4xl font-extrabold mb-8 text-blue-600 text-center
+                        dark:text-blue-400">
+          Explore Our Products
+        </h2>
 
-        {/* Loading state */}
-        {loading && (
-          <p className="text-center text-gray-600 dark:text-gray-400">Loading products...</p>
-        )}
+        {/* Conditional rendering for loading, error, and empty states */}
+        {loading ? (
+          <p className="text-center text-gray-600 dark:text-gray-400 text-lg py-10">Loading products...</p>
+        ) : error ? (
+          <p className="text-center text-red-500 dark:text-red-400 text-lg py-10">{error}</p>
+        ) : products.length === 0 ? (
+          <p className="text-center text-gray-600 dark:text-gray-400 text-lg py-10">
+            No products available right now. Please check back later!
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 sm:gap-8"> {/* Responsive grid columns and gaps */}
+            {products.map((product) => (
+              <div
+                key={product._id}
+                className="bg-white rounded-lg p-4 shadow-md hover:shadow-lg transition-transform transform hover:-translate-y-1 cursor-pointer flex flex-col h-full
+                           dark:bg-gray-800 dark:shadow-xl dark:border dark:border-gray-700 overflow-hidden"
+              >
+                {/* Product Image */}
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  className="w-full h-48 object-contain rounded-md mb-4 flex-shrink-0 bg-gray-50 dark:bg-gray-700 p-2" // object-contain ensures image fits without cropping, added padding
+                  onError={(e) => { e.target.onerror = null; e.target.src = 'https://i.ibb.co/L84kY2D/product-placeholder.webp' }} // Fallback placeholder image URL
+                />
+                {/* Product Details */}
+                <h3 className="text-lg font-semibold mb-1 text-gray-900 line-clamp-2 flex-grow
+                                dark:text-white">
+                  {product.name}
+                </h3>
+                <p className="text-gray-600 text-sm mb-2 line-clamp-3 dark:text-gray-400">{product.description}</p> {/* Smaller text and line-clamp for description */}
+                <p className="font-bold text-xl text-blue-700 mb-4 dark:text-blue-300">${product.price.toFixed(2)}</p> {/* Larger price text */}
 
-        {/* Error state (for network/fetch issues) */}
-        {error && (
-          <p className="text-center text-red-500 dark:text-red-400">{error}</p>
-        )}
-
-        {/* Products Grid */}
-        {!loading && !error && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8">
-            {products.length > 0 ? (
-              products.map((product) => (
-                <div
-                  key={product._id}
-                  className="bg-white rounded-lg p-4 shadow-md hover:shadow-lg transition cursor-pointer flex flex-col
-                             dark:bg-gray-800 dark:shadow-xl dark:border dark:border-gray-700"
+                {/* Add to Cart Button */}
+                <button
+                  onClick={() => handleAddToCart(product)}
+                  className="bg-blue-600 text-white py-2 px-4 rounded-full hover:bg-blue-700 transition-colors duration-300 flex items-center justify-center gap-2 mt-auto text-base font-medium
+                             focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
                 >
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="w-full h-48 object-cover rounded-md mb-4 flex-shrink-0"
-                  />
-                  <h3 className="text-lg font-semibold mb-1 text-gray-900 flex-grow
-                                 dark:text-white">
-                    {product.name}
-                  </h3>
-                  <p className="text-gray-600 mb-2 line-clamp-3 dark:text-gray-400">{product.description}</p>
-                  <p className="font-semibold text-blue-700 mb-4 dark:text-blue-300">${product.price.toFixed(2)}</p>
-
-                  {/* Add to Cart Button */}
-                  <button
-                    onClick={() => handleAddToCart(product)}
-                    className="bg-blue-600 text-white py-2 px-4 rounded-full hover:bg-blue-700 transition-colors duration-300 flex items-center justify-center gap-2 mt-auto"
-                  >
-                    <FaShoppingCart /> Add to Cart
-                  </button>
-                </div>
-              ))
-            ) : (
-              <p className="text-center col-span-full text-gray-600 dark:text-gray-400">
-                No products available right now.
-              </p>
-            )}
+                  <FaShoppingCart /> Add to Cart
+                </button>
+              </div>
+            ))}
           </div>
         )}
       </main>
