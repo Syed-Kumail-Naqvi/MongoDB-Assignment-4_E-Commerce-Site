@@ -36,7 +36,7 @@ const SignupPage = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:5000/api/auth/register", {
+      const response = await fetch("https://mongodb-assignment-4-e-commerce-site.onrender.com/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

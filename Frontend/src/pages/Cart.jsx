@@ -88,7 +88,7 @@ const CartPage = () => {
         };
 
         try {
-          const res = await fetch("http://localhost:5000/api/orders", {
+          const res = await fetch("https://mongodb-assignment-4-e-commerce-site.onrender.com/orders", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",

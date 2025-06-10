@@ -12,7 +12,7 @@ const HomePage = () => {
   useEffect(() => {
     const fetchFeaturedProducts = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/products");
+        const res = await fetch("https://mongodb-assignment-4-e-commerce-site.onrender.com/products");
         if (!res.ok) {
           const errorData = await res.json();
           throw new Error(errorData.message || `HTTP error! status: ${res.status}`);

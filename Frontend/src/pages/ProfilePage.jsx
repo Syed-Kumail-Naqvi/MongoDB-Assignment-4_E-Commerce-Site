@@ -123,7 +123,7 @@ const ProfilePage = () => {
     }
 
     try {
-      const res = await fetch('http://localhost:5000/api/auth/profile', {
+      const res = await fetch('https://mongodb-assignment-4-e-commerce-site.onrender.com/auth/profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -167,7 +167,7 @@ const ProfilePage = () => {
     formData.append('profileImage', profileImageFile); // 'profileImage' must match the field name in multer middleware
 
     try {
-      const res = await fetch('http://localhost:5000/api/auth/profile/image', {
+      const res = await fetch('https://mongodb-assignment-4-e-commerce-site.onrender.com/auth/profile/image', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`, // No 'Content-Type' header for FormData

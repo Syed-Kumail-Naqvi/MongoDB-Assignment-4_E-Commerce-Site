@@ -35,7 +35,7 @@ const AdminLoginPage = () => {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/api/auth/admin/login",
+        "https://mongodb-assignment-4-e-commerce-site.onrender.com/auth/admin/login",
         {
           method: "POST",
           headers: {

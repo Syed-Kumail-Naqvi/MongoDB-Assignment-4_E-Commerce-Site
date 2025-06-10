@@ -30,7 +30,7 @@ const Dashboard = () => {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const res = await fetch("http://localhost:5000/api/products");
+      const res = await fetch("https://mongodb-assignment-4-e-commerce-site.onrender.com/products");
       const data = await res.json();
 
       if (res.ok && data.success && Array.isArray(data.products)) {
@@ -59,7 +59,7 @@ const Dashboard = () => {
   const fetchUsersWithOrders = async () => {
     try {
       setUserLoading(true);
-      const res = await fetch("http://localhost:5000/api/admin/users", {
+      const res = await fetch("https://mongodb-assignment-4-e-commerce-site.onrender.com/admin/users", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("userToken")}`,
         },
@@ -105,7 +105,7 @@ const Dashboard = () => {
     if (confirmed.isConfirmed) {
       try {
         setUserLoading(true); // Indicate loading for user operations
-        const res = await fetch(`http://localhost:5000/api/admin/users/${userId}`, {
+        const res = await fetch(`https://mongodb-assignment-4-e-commerce-site.onrender.com/admin/users/${userId}`, {
           method: "DELETE",
           headers: {
             Authorization: `Bearer ${localStorage.getItem("userToken")}`,
@@ -204,8 +204,8 @@ const Dashboard = () => {
       setLoading(true);
       const method = isEditing ? "PUT" : "POST";
       const url = isEditing
-        ? `http://localhost:5000/api/products/${currentProduct._id}`
-        : "http://localhost:5000/api/products";
+        ? `https://mongodb-assignment-4-e-commerce-site.onrender.com/products/${currentProduct._id}`
+        : "https://mongodb-assignment-4-e-commerce-site.onrender.com/products";
 
       const res = await fetch(url, {
         method: method,
@@ -250,7 +250,7 @@ const Dashboard = () => {
       try {
         setLoading(true);
         const res = await fetch(
-          `http://localhost:5000/api/products/${productId}`,
+          `https://mongodb-assignment-4-e-commerce-site.onrender.com/products/${productId}`,
           {
             method: "DELETE",
             headers: {

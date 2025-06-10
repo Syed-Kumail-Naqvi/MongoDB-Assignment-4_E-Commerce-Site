@@ -75,8 +75,8 @@ const ProductModal = ({ product, onClose, token, onProductSuccess }) => {
     try {
       // Determine API URL and HTTP method based on whether it's an edit or add operation
       const url = product
-        ? `http://localhost:5000/api/products/${product._id}` // URL for updating existing product
-        : 'http://localhost:5000/api/products'; // URL for adding new product
+        ? `https://mongodb-assignment-4-e-commerce-site.onrender.com/products/${product._id}` // URL for updating existing product
+        : 'https://mongodb-assignment-4-e-commerce-site.onrender.com/products'; // URL for adding new product
       const method = product ? 'PUT' : 'POST'; // PUT for update, POST for add
 
       // Send the fetch request
